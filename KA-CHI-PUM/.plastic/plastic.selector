@@ -1,0 +1,3 @@
+repository "KA-CHI-PUM/KA-CHI-PUM@4674125524555@cloud"
+  path "/"
+    smartbranch "/main/jotape"
