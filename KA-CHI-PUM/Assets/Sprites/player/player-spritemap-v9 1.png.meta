@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 44d476090234bf347bae7de19adc38a1
+guid: 4e52769f67742fa4a8f08e01a54ff872
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: andromalius-57x88_0
+      name: player-spritemap-v9_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 177
-        width: 53
-        height: 87
+        x: 12
+        y: 152
+        width: 22
+        height: 45
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -111,20 +111,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 06d71a5bf236b324cb53d2d384a2f50f
-      internalID: 1810245755
+      spriteID: 74ccd5faf9b2c5c408b927e722955f41
+      internalID: 1614828422
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_1
+      name: player-spritemap-v9_1
       rect:
         serializedVersion: 2
-        x: 57
-        y: 177
-        width: 54
-        height: 87
+        x: 52
+        y: 152
+        width: 28
+        height: 30
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -132,20 +132,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 39bfc6fa6751898499b8a279f1425dd6
-      internalID: 97761691
+      spriteID: 8d44bbb2fc2fec642a545c27c5b30d71
+      internalID: 1687671305
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_2
+      name: player-spritemap-v9_2
       rect:
         serializedVersion: 2
-        x: 114
-        y: 177
-        width: 54
-        height: 87
+        x: 100
+        y: 152
+        width: 29
+        height: 44
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -153,20 +153,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c885d10ef5a8e234c89f5d0267622db8
-      internalID: -421577063
+      spriteID: 10b9b5e27c5083e41a606e6c9803e9d6
+      internalID: 2135497230
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_3
+      name: player-spritemap-v9_3
       rect:
         serializedVersion: 2
-        x: 172
-        y: 177
-        width: 53
-        height: 87
+        x: 146
+        y: 152
+        width: 33
+        height: 44
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -174,20 +174,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ebda4014e94783c4cb43ff950e8120e7
-      internalID: 309342452
+      spriteID: fe6a8de510cd43744aef5d67784f831b
+      internalID: -1490489727
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_4
+      name: player-spritemap-v9_4
       rect:
         serializedVersion: 2
-        x: 230
-        y: 177
-        width: 52
-        height: 87
+        x: 193
+        y: 152
+        width: 29
+        height: 44
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -195,20 +195,41 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9795f037c5f5def40b64b72668868da5
-      internalID: -1554975081
+      spriteID: c6813559f1b82844abbbc4752362e3db
+      internalID: -1746097493
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_5
+      name: player-spritemap-v9_5
+      rect:
+        serializedVersion: 2
+        x: 239
+        y: 152
+        width: 29
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67858416df36e8f4e87c2c889d4cec86
+      internalID: -1669257908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player-spritemap-v9_6
       rect:
         serializedVersion: 2
         x: 287
-        y: 177
-        width: 52
-        height: 87
+        y: 151
+        width: 22
+        height: 46
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -216,20 +237,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e0e04068d8150794b87f65c3bbbcd24a
-      internalID: -1103083553
+      spriteID: 8e1c3f9228ec20647b2b75421cde6ade
+      internalID: 1237139120
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_6
+      name: player-spritemap-v9_7
       rect:
         serializedVersion: 2
-        x: 343
-        y: 177
-        width: 53
-        height: 87
+        x: 334
+        y: 152
+        width: 21
+        height: 44
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -237,20 +258,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cc042581909768644ac27ef1da7691dc
-      internalID: 97884892
+      spriteID: 2c7356b7bdbf07a4e823b4831f63a4f5
+      internalID: 795988310
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_7
+      name: player-spritemap-v9_8
       rect:
         serializedVersion: 2
-        x: 399
-        y: 177
-        width: 54
-        height: 87
+        x: 8
+        y: 101
+        width: 30
+        height: 41
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -258,20 +279,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d3f9f9eac12e30f40b8f1916ed1abca9
-      internalID: -362270877
+      spriteID: 5ca9a936f9158fe459d4e4af32049a9e
+      internalID: 1618669140
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_8
+      name: player-spritemap-v9_9
       rect:
         serializedVersion: 2
-        x: 1
-        y: 89
-        width: 53
-        height: 87
+        x: 54
+        y: 102
+        width: 29
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -279,20 +300,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1464b906bec811940a87916caf6482b1
-      internalID: -1048365556
+      spriteID: 9d789d5bd0a772c4ba712005315c92a5
+      internalID: -1193854220
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_9
+      name: player-spritemap-v9_10
       rect:
         serializedVersion: 2
-        x: 57
-        y: 89
-        width: 54
-        height: 87
+        x: 100
+        y: 101
+        width: 24
+        height: 49
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -300,20 +321,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 49b27583316452242881184dae57f251
-      internalID: 162617343
+      spriteID: 0e28b81b90252e44b810b1cb50cb4b41
+      internalID: 654557635
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_10
+      name: player-spritemap-v9_11
       rect:
         serializedVersion: 2
-        x: 114
-        y: 89
-        width: 54
-        height: 87
+        x: 147
+        y: 101
+        width: 31
+        height: 49
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -321,20 +342,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8e408df947a732e49a2d52240d3471a6
-      internalID: 629625009
+      spriteID: 3ee7e8dbb99bea44da0b12cab89b3a9e
+      internalID: 321458502
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_11
+      name: player-spritemap-v9_12
       rect:
         serializedVersion: 2
-        x: 172
-        y: 89
-        width: 53
-        height: 87
+        x: 194
+        y: 101
+        width: 26
+        height: 49
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -342,20 +363,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3a87d92338cb64d40984f5b6aaaef5f4
-      internalID: -408769474
+      spriteID: 594ab50d5ec8afe4abbe690571dbb115
+      internalID: -1500409007
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_12
+      name: player-spritemap-v9_13
       rect:
         serializedVersion: 2
-        x: 230
-        y: 89
-        width: 52
-        height: 87
+        x: 240
+        y: 101
+        width: 23
+        height: 49
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -363,20 +384,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 24038e9aeddb5be4cb1b5ff9be9e381e
-      internalID: 584083331
+      spriteID: a8747d967160b3d4f986a34f2e4a17a5
+      internalID: 1992251476
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_13
+      name: player-spritemap-v9_14
       rect:
         serializedVersion: 2
-        x: 287
-        y: 89
-        width: 52
-        height: 87
+        x: 5
+        y: 58
+        width: 39
+        height: 29
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -384,20 +405,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 93bdcaba1a2349f468c41b3924aa34f3
-      internalID: -26945912
+      spriteID: 0478d4abda136d043b774e85c611e272
+      internalID: 758139806
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_14
+      name: player-spritemap-v9_15
       rect:
         serializedVersion: 2
-        x: 343
-        y: 89
-        width: 53
-        height: 87
+        x: 52
+        y: 52
+        width: 39
+        height: 18
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -405,20 +426,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d620a71117f6d334a905c099c1e4b9ff
-      internalID: -1414137466
+      spriteID: e53af07e96402d347b233225d6823439
+      internalID: 564434345
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_15
+      name: player-spritemap-v9_16
       rect:
         serializedVersion: 2
-        x: 399
-        y: 89
-        width: 54
-        height: 87
+        x: 98
+        y: 52
+        width: 28
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -426,20 +447,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: da3f4a05f09437148a19dc1b8b58479a
-      internalID: -16168874
+      spriteID: c1cadf1e818b3514bbad405fb65383ee
+      internalID: 1718454840
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_16
+      name: player-spritemap-v9_17
       rect:
         serializedVersion: 2
-        x: 4
-        y: 0
-        width: 53
-        height: 88
+        x: 143
+        y: 52
+        width: 37
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -447,20 +468,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c120b88b5fa33884e9a1b0dcf004f41a
-      internalID: -2125118064
+      spriteID: 2c6d892348ee7d24ea1c69a4790c3035
+      internalID: 691533279
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_17
+      name: player-spritemap-v9_18
       rect:
         serializedVersion: 2
-        x: 63
-        y: 0
-        width: 45
-        height: 88
+        x: 190
+        y: 52
+        width: 32
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -468,20 +489,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ebbd325fa94b0524a88919c8223710e7
-      internalID: -1314415892
+      spriteID: 8bc5d18bb25265847b5041728a891581
+      internalID: -2105863480
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_18
+      name: player-spritemap-v9_19
       rect:
         serializedVersion: 2
-        x: 122
-        y: 0
-        width: 45
-        height: 88
+        x: 236
+        y: 52
+        width: 28
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -489,20 +510,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c9383b515c73aaf4fa35bc98115aaca2
-      internalID: 2049586147
+      spriteID: a501692a8fd7d374586a7a01bbee2b38
+      internalID: 697754752
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_19
+      name: player-spritemap-v9_20
       rect:
         serializedVersion: 2
-        x: 172
-        y: 0
-        width: 53
-        height: 88
+        x: 5
+        y: 2
+        width: 34
+        height: 38
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -510,20 +531,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b162896ba6396be419d0a00d683765ed
-      internalID: 1900612902
+      spriteID: b41c10d9c85564b478fbc75d90791b3a
+      internalID: 1471419241
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_20
+      name: player-spritemap-v9_21
       rect:
         serializedVersion: 2
-        x: 234
-        y: 1
-        width: 46
-        height: 87
+        x: 48
+        y: 2
+        width: 36
+        height: 37
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -531,20 +552,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 54f5ffc57ab5a8b4abb0d76f8487b573
-      internalID: 348300684
+      spriteID: d05c14603e24f5c45a48ab313fbf85fa
+      internalID: 1683553736
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_21
+      name: player-spritemap-v9_22
       rect:
         serializedVersion: 2
-        x: 290
-        y: 1
-        width: 47
-        height: 87
+        x: 100
+        y: 2
+        width: 32
+        height: 38
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -552,20 +573,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 568212a99a311fa428441802894b8d94
-      internalID: -1682320006
+      spriteID: dd13877fdaf93a8499b6dbdc70c5ff98
+      internalID: -958685314
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_22
+      name: player-spritemap-v9_23
       rect:
         serializedVersion: 2
-        x: 347
-        y: 1
-        width: 47
-        height: 87
+        x: 150
+        y: 2
+        width: 23
+        height: 38
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -573,20 +594,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9f6a1c1d4de6a934d9e48778b502782b
-      internalID: -1769848069
+      spriteID: c901aae785e41f44b90844e8ce89d2d9
+      internalID: -1391648033
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: andromalius-57x88_23
+      name: player-spritemap-v9_24
       rect:
         serializedVersion: 2
-        x: 404
-        y: 1
-        width: 48
-        height: 87
+        x: 189
+        y: 2
+        width: 33
+        height: 38
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -594,8 +615,71 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d7511e66f09124246ab4a707baecbab9
-      internalID: -111666765
+      spriteID: 1766627398cbec945a28472e01b8df7a
+      internalID: -88695523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player-spritemap-v9_25
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 2
+        width: 37
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 13c5837038db7c54da1fae357782c254
+      internalID: 1390098104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player-spritemap-v9_26
+      rect:
+        serializedVersion: 2
+        x: 285
+        y: 2
+        width: 27
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ace8edfa31d6656498d322d0578e1a0f
+      internalID: 415508849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player-spritemap-v9_27
+      rect:
+        serializedVersion: 2
+        x: 333
+        y: 2
+        width: 24
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2bba0318d9edb5942a3aecb1e654dfc1
+      internalID: 1764806939
       vertices: []
       indices: 
       edges: []
@@ -611,30 +695,34 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      andromalius-57x88_0: 1810245755
-      andromalius-57x88_1: 97761691
-      andromalius-57x88_10: 629625009
-      andromalius-57x88_11: -408769474
-      andromalius-57x88_12: 584083331
-      andromalius-57x88_13: -26945912
-      andromalius-57x88_14: -1414137466
-      andromalius-57x88_15: -16168874
-      andromalius-57x88_16: -2125118064
-      andromalius-57x88_17: -1314415892
-      andromalius-57x88_18: 2049586147
-      andromalius-57x88_19: 1900612902
-      andromalius-57x88_2: -421577063
-      andromalius-57x88_20: 348300684
-      andromalius-57x88_21: -1682320006
-      andromalius-57x88_22: -1769848069
-      andromalius-57x88_23: -111666765
-      andromalius-57x88_3: 309342452
-      andromalius-57x88_4: -1554975081
-      andromalius-57x88_5: -1103083553
-      andromalius-57x88_6: 97884892
-      andromalius-57x88_7: -362270877
-      andromalius-57x88_8: -1048365556
-      andromalius-57x88_9: 162617343
+      player-spritemap-v9_0: 1614828422
+      player-spritemap-v9_1: 1687671305
+      player-spritemap-v9_10: 654557635
+      player-spritemap-v9_11: 321458502
+      player-spritemap-v9_12: -1500409007
+      player-spritemap-v9_13: 1992251476
+      player-spritemap-v9_14: 758139806
+      player-spritemap-v9_15: 564434345
+      player-spritemap-v9_16: 1718454840
+      player-spritemap-v9_17: 691533279
+      player-spritemap-v9_18: -2105863480
+      player-spritemap-v9_19: 697754752
+      player-spritemap-v9_2: 2135497230
+      player-spritemap-v9_20: 1471419241
+      player-spritemap-v9_21: 1683553736
+      player-spritemap-v9_22: -958685314
+      player-spritemap-v9_23: -1391648033
+      player-spritemap-v9_24: -88695523
+      player-spritemap-v9_25: 1390098104
+      player-spritemap-v9_26: 415508849
+      player-spritemap-v9_27: 1764806939
+      player-spritemap-v9_3: -1490489727
+      player-spritemap-v9_4: -1746097493
+      player-spritemap-v9_5: -1669257908
+      player-spritemap-v9_6: 1237139120
+      player-spritemap-v9_7: 795988310
+      player-spritemap-v9_8: 1618669140
+      player-spritemap-v9_9: -1193854220
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
