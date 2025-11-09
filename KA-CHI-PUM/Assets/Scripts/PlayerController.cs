@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Combate")]
     public float rangoAtaque = 1f;
-    public int dañoAtaque = 10;
+    public int danioAtaque = 10;
     public float tiempoEntreAtaques = 0.5f;
     public Transform puntoAtaque;
     public LayerMask capasEnemigos;
@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     private bool puedeAtacar = true;
     private bool estaAtacando = false;
 
-    // Nombres de parámetros del Animator
+    // Nombres de parï¿½metros del Animator
     private int velocidadXHash;
     private int velocidadYHash;
     private int atacandoHash;
@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         vidaActual = vidaMaxima;
 
-        // Cachear los hashes de los parámetros del Animator
+        // Cachear los hashes de los parï¿½metros del Animator
         velocidadXHash = Animator.StringToHash("VelocidadX");
         velocidadYHash = Animator.StringToHash("VelocidadY");
         atacandoHash = Animator.StringToHash("Atacando");
@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour
             movimiento.x = Input.GetAxisRaw("Horizontal");
             movimiento.y = Input.GetAxisRaw("Vertical");
 
-            // Guardar la última dirección si hay movimiento
+            // Guardar la ï¿½ltima direcciï¿½n si hay movimiento
             if (movimiento.magnitude > 0)
             {
                 ultimaDireccion = movimiento.normalized;
@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour
         // Aplicar movimiento
         if (!estaAtacando)
         {
-            rb.MovePosition(rb.position + movimiento.normalized * velocidadMovimiento * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + movimiento.normalized * (velocidadMovimiento * Time.fixedDeltaTime));
         }
     }
 
@@ -90,7 +90,7 @@ public class PlayerController : MonoBehaviour
         estaAtacando = true;
         puedeAtacar = false;
 
-        // Determinar dirección de ataque (0=Abajo, 1=Arriba, 2=Derecha, 3=Izquierda)
+        // Determinar direcciï¿½n de ataque (0=Abajo, 1=Arriba, 2=Derecha, 3=Izquierda)
         int direccion = ObtenerDireccionAtaque();
         animator.SetInteger(direccionAtaqueHash, direccion);
         animator.SetTrigger(atacandoHash);
@@ -98,13 +98,13 @@ public class PlayerController : MonoBehaviour
         // Detectar enemigos en rango
         Collider2D[] enemigosGolpeados = Physics2D.OverlapCircleAll(puntoAtaque.position, rangoAtaque, capasEnemigos);
 
-        // Aplicar daño a los enemigos
+        // Aplicar daï¿½o a los enemigos
         foreach (Collider2D enemigo in enemigosGolpeados)
         {
             Enemigo enemigoScript = enemigo.GetComponent<Enemigo>();
             if (enemigoScript != null)
             {
-                enemigoScript.RecibirDaño(dañoAtaque);
+                enemigoScript.RecibirDanio(danioAtaque);
             }
         }
 
@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour
         puedeAtacar = true;
     }
 
-    public void RecibirDaño(int cantidad)
+    public void RecibirDanio(int cantidad)
     {
         vidaActual -= cantidad;
 
@@ -146,8 +146,8 @@ public class PlayerController : MonoBehaviour
 
     void Morir()
     {
-        Debug.Log("¡El jugador ha muerto!");
-        // Aquí puedes agregar lógica de game over
+        Debug.Log("El jugador ha muerto!");
+        // Aquï¿½ puedes agregar lï¿½gica de game over
         // Por ejemplo: mostrar pantalla de game over, reiniciar nivel, etc.
     }
 
@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireSphere(puntoAtaque.position, rangoAtaque);
     }
 
-    // Getters públicos
+    // Getters pï¿½blicos
     public int ObtenerVidaActual() { return vidaActual; }
     public int ObtenerVidaMaxima() { return vidaMaxima; }
 }

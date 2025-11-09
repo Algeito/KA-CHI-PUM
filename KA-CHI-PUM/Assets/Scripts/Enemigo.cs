@@ -4,23 +4,19 @@ using UnityEngine;
 
 public class Enemigo : MonoBehaviour
 {
-    [Header("Estadísticas")]
-    public int vidaMaxima = 50;
+    [Header("Estadï¿½sticas")] public int vidaMaxima = 50;
     private int vidaActual;
-    public int dañoAtaque = 5;
+    public int danioAtaque = 5;
 
-    [Header("Movimiento")]
-    public float velocidadMovimiento = 2f;
+    [Header("Movimiento")] public float velocidadMovimiento = 2f;
     public float velocidadPersecucion = 3f;
 
-    [Header("Detección y Combate")]
-    public float rangoDeteccion = 5f;
+    [Header("Detecciï¿½n y Combate")] public float rangoDeteccion = 5f;
     public float rangoAtaque = 1.5f;
     public float tiempoEntreAtaques = 1.5f;
     public LayerMask capaJugador;
 
-    [Header("Patrullaje (Opcional)")]
-    public bool patrulla = true;
+    [Header("Patrullaje (Opcional)")] public bool patrulla = true;
     public float rangoPatrullaje = 3f;
     public float tiempoEsperaPatrulla = 2f;
 
@@ -35,7 +31,15 @@ public class Enemigo : MonoBehaviour
     private bool estaAtacando = false;
 
     // Control de estados
-    private enum EstadoEnemigo { Idle, Patrullando, Persiguiendo, Atacando, Muerto }
+    private enum EstadoEnemigo
+    {
+        Idle,
+        Patrullando,
+        Persiguiendo,
+        Atacando,
+        Muerto
+    }
+
     private EstadoEnemigo estadoActual = EstadoEnemigo.Idle;
 
     // Variables de patrullaje
@@ -43,7 +47,7 @@ public class Enemigo : MonoBehaviour
     private Vector2 destinoPatrulla;
     private float tiempoEsperaActual;
 
-    // Variables de animación
+    // Variables de animaciï¿½n
     private Vector2 ultimaDireccion = Vector2.down;
 
     void Start()
@@ -61,13 +65,13 @@ public class Enemigo : MonoBehaviour
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         }
 
-        // Guardar posición inicial
+        // Guardar posiciï¿½n inicial
         puntoInicial = transform.position;
 
         // Buscar al jugador
         BuscarJugador();
 
-        // Iniciar patrullaje si está activado
+        // Iniciar patrullaje si estï¿½ activado
         if (patrulla)
         {
             GenerarPuntoPatrulla();
@@ -97,7 +101,7 @@ public class Enemigo : MonoBehaviour
 
         float distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
 
-        // Máquina de estados
+        // Mï¿½quina de estados
         switch (estadoActual)
         {
             case EstadoEnemigo.Idle:
@@ -111,6 +115,7 @@ public class Enemigo : MonoBehaviour
                 {
                     estadoActual = EstadoEnemigo.Patrullando;
                 }
+
                 break;
 
             case EstadoEnemigo.Patrullando:
@@ -120,6 +125,7 @@ public class Enemigo : MonoBehaviour
                 {
                     estadoActual = EstadoEnemigo.Persiguiendo;
                 }
+
                 break;
 
             case EstadoEnemigo.Persiguiendo:
@@ -129,7 +135,7 @@ public class Enemigo : MonoBehaviour
                 }
                 else if (distanciaAlJugador > rangoDeteccion)
                 {
-                    // Perdió al jugador, volver a patrullar o idle
+                    // Perdiï¿½ al jugador, volver a patrullar o idle
                     estadoActual = patrulla ? EstadoEnemigo.Patrullando : EstadoEnemigo.Idle;
                     GenerarPuntoPatrulla();
                 }
@@ -137,6 +143,7 @@ public class Enemigo : MonoBehaviour
                 {
                     PerseguirJugador();
                 }
+
                 break;
 
             case EstadoEnemigo.Atacando:
@@ -149,6 +156,7 @@ public class Enemigo : MonoBehaviour
                 {
                     AtacarJugador();
                 }
+
                 break;
         }
 
@@ -163,7 +171,7 @@ public class Enemigo : MonoBehaviour
 
     void ModoPatrulla()
     {
-        // Si está esperando
+        // Si estï¿½ esperando
         if (tiempoEsperaActual > 0)
         {
             tiempoEsperaActual -= Time.deltaTime;
@@ -176,7 +184,7 @@ public class Enemigo : MonoBehaviour
         rb.velocity = direccion * velocidadMovimiento;
         ultimaDireccion = direccion;
 
-        // Si llegó al destino, generar nuevo punto
+        // Si llegï¿½ al destino, generar nuevo punto
         if (Vector2.Distance(transform.position, destinoPatrulla) < 0.5f)
         {
             tiempoEsperaActual = tiempoEsperaPatrulla;
@@ -214,24 +222,24 @@ public class Enemigo : MonoBehaviour
         estaAtacando = true;
         puedeAtacar = false;
 
-        // Activar animación de ataque
+        // Activar animaciï¿½n de ataque
         if (animator != null)
         {
             animator.SetTrigger("Atacando");
         }
 
-        // Pequeña espera para sincronizar con la animación
+        // Pequeï¿½a espera para sincronizar con la animaciï¿½n
         yield return new WaitForSeconds(0.2f);
 
-        // Detectar y dañar al jugador
+        // Detectar y daï¿½ar al jugador
         Collider2D[] objetosGolpeados = Physics2D.OverlapCircleAll(transform.position, rangoAtaque, capaJugador);
         foreach (Collider2D obj in objetosGolpeados)
         {
             PlayerController jugadorScript = obj.GetComponent<PlayerController>();
             if (jugadorScript != null)
             {
-                jugadorScript.RecibirDaño(dañoAtaque);
-                Debug.Log("Enemigo golpeó al jugador por " + dañoAtaque + " de daño");
+                jugadorScript.RecibirDanio(danioAtaque);
+                Debug.Log("Enemigo golpea al jugador por " + danioAtaque + " de daÃ±o");
             }
         }
 
@@ -261,26 +269,26 @@ public class Enemigo : MonoBehaviour
     {
         if (animator == null) return;
 
-        // Actualizar parámetros de velocidad para animaciones de movimiento
+        // Actualizar parï¿½metros de velocidad para animaciones de movimiento
         animator.SetFloat("VelocidadX", ultimaDireccion.x);
         animator.SetFloat("VelocidadY", ultimaDireccion.y);
 
-        // Puedes agregar más parámetros según tus animaciones
+        // Puedes agregar mï¿½s parï¿½metros segï¿½n tus animaciones
         animator.SetBool("EnMovimiento", rb.velocity.magnitude > 0.1f);
     }
 
-    public void RecibirDaño(int cantidad)
+    public void RecibirDanio(int cantidad)
     {
         if (estadoActual == EstadoEnemigo.Muerto)
             return;
 
         vidaActual -= cantidad;
-        Debug.Log("Enemigo recibió " + cantidad + " de daño. Vida restante: " + vidaActual);
+        Debug.Log("Enemigo recibiï¿½ " + cantidad + " de daï¿½o. Vida restante: " + vidaActual);
 
-        // Efecto visual de daño
+        // Efecto visual de daï¿½o
         StartCoroutine(EfectoGolpe());
 
-        // Si recibe daño, empezar a perseguir al jugador
+        // Si recibe daï¿½o, empezar a perseguir al jugador
         if (estadoActual != EstadoEnemigo.Atacando && estadoActual != EstadoEnemigo.Persiguiendo)
         {
             estadoActual = EstadoEnemigo.Persiguiendo;
@@ -316,13 +324,13 @@ public class Enemigo : MonoBehaviour
         if (col != null)
             col.enabled = false;
 
-        // Animación de muerte si existe
+        // Animaciï¿½n de muerte si existe
         if (animator != null)
         {
             animator.SetTrigger("Morir");
         }
 
-        // Destruir después de un tiempo (para permitir animación de muerte)
+        // Destruir despuï¿½s de un tiempo (para permitir animaciï¿½n de muerte)
         StartCoroutine(DestruirDespuesDeTiempo(1f));
     }
 
@@ -330,9 +338,9 @@ public class Enemigo : MonoBehaviour
     {
         yield return new WaitForSeconds(tiempo);
 
-        // Aquí puedes agregar efectos adicionales:
+        // Aquï¿½ puedes agregar efectos adicionales:
         // - Spawn de items
-        // - Efectos de partículas
+        // - Efectos de partï¿½culas
         // - Sonidos
 
         Destroy(gameObject);
@@ -341,7 +349,7 @@ public class Enemigo : MonoBehaviour
     // Visualizar rangos en el editor
     void OnDrawGizmosSelected()
     {
-        // Rango de detección (amarillo)
+        // Rango de detecciï¿½n (amarillo)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, rangoDeteccion);
 
@@ -349,7 +357,7 @@ public class Enemigo : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, rangoAtaque);
 
-        // Rango de patrullaje (azul) - solo si está activado
+        // Rango de patrullaje (azul) - solo si estï¿½ activado
         if (patrulla)
         {
             Vector3 puntoInicio = Application.isPlaying ? puntoInicial : transform.position;
@@ -358,8 +366,14 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // Getters públicos
-    public int ObtenerVidaActual() { return vidaActual; }
-    public int ObtenerVidaMaxima() { return vidaMaxima; }
-    public EstadoEnemigo ObtenerEstado() { return estadoActual; }
+    // Getters pï¿½blicos
+    public int ObtenerVidaActual()
+    {
+        return vidaActual;
+    }
+
+    public int ObtenerVidaMaxima()
+    {
+        return vidaMaxima;
+    }
 }
