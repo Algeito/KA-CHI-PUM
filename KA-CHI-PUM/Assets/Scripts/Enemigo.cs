@@ -31,7 +31,7 @@ public class Enemigo : MonoBehaviour
     private bool estaAtacando = false;
 
     // Control de estados
-    private enum EstadoEnemigo
+    public enum EstadoEnemigo
     {
         Idle,
         Patrullando,
@@ -375,5 +375,9 @@ public class Enemigo : MonoBehaviour
     public int ObtenerVidaMaxima()
     {
         return vidaMaxima;
+    }
+    public EstadoEnemigo ObtenerEstadoActual()
+    {
+        return estadoActual;
     }
 }
