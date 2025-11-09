@@ -1,0 +1,365 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Enemigo : MonoBehaviour
+{
+    [Header("Estadísticas")]
+    public int vidaMaxima = 50;
+    private int vidaActual;
+    public int dañoAtaque = 5;
+
+    [Header("Movimiento")]
+    public float velocidadMovimiento = 2f;
+    public float velocidadPersecucion = 3f;
+
+    [Header("Detección y Combate")]
+    public float rangoDeteccion = 5f;
+    public float rangoAtaque = 1.5f;
+    public float tiempoEntreAtaques = 1.5f;
+    public LayerMask capaJugador;
+
+    [Header("Patrullaje (Opcional)")]
+    public bool patrulla = true;
+    public float rangoPatrullaje = 3f;
+    public float tiempoEsperaPatrulla = 2f;
+
+    // Referencias privadas
+    private Transform jugador;
+    private Rigidbody2D rb;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+
+    // Control de combate
+    private bool puedeAtacar = true;
+    private bool estaAtacando = false;
+
+    // Control de estados
+    private enum EstadoEnemigo { Idle, Patrullando, Persiguiendo, Atacando, Muerto }
+    private EstadoEnemigo estadoActual = EstadoEnemigo.Idle;
+
+    // Variables de patrullaje
+    private Vector2 puntoInicial;
+    private Vector2 destinoPatrulla;
+    private float tiempoEsperaActual;
+
+    // Variables de animación
+    private Vector2 ultimaDireccion = Vector2.down;
+
+    void Start()
+    {
+        // Inicializar componentes
+        vidaActual = vidaMaxima;
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Configurar Rigidbody2D
+        if (rb != null)
+        {
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        }
+
+        // Guardar posición inicial
+        puntoInicial = transform.position;
+
+        // Buscar al jugador
+        BuscarJugador();
+
+        // Iniciar patrullaje si está activado
+        if (patrulla)
+        {
+            GenerarPuntoPatrulla();
+            estadoActual = EstadoEnemigo.Patrullando;
+        }
+        else
+        {
+            estadoActual = EstadoEnemigo.Idle;
+        }
+    }
+
+    void Update()
+    {
+        if (estadoActual == EstadoEnemigo.Muerto)
+            return;
+
+        // Si no hay jugador, intentar buscarlo
+        if (jugador == null)
+        {
+            BuscarJugador();
+            if (jugador == null)
+            {
+                estadoActual = EstadoEnemigo.Idle;
+                return;
+            }
+        }
+
+        float distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
+
+        // Máquina de estados
+        switch (estadoActual)
+        {
+            case EstadoEnemigo.Idle:
+                ModoIdle();
+                // Verificar si detecta al jugador
+                if (distanciaAlJugador <= rangoDeteccion)
+                {
+                    estadoActual = EstadoEnemigo.Persiguiendo;
+                }
+                else if (patrulla)
+                {
+                    estadoActual = EstadoEnemigo.Patrullando;
+                }
+                break;
+
+            case EstadoEnemigo.Patrullando:
+                ModoPatrulla();
+                // Verificar si detecta al jugador
+                if (distanciaAlJugador <= rangoDeteccion)
+                {
+                    estadoActual = EstadoEnemigo.Persiguiendo;
+                }
+                break;
+
+            case EstadoEnemigo.Persiguiendo:
+                if (distanciaAlJugador <= rangoAtaque)
+                {
+                    estadoActual = EstadoEnemigo.Atacando;
+                }
+                else if (distanciaAlJugador > rangoDeteccion)
+                {
+                    // Perdió al jugador, volver a patrullar o idle
+                    estadoActual = patrulla ? EstadoEnemigo.Patrullando : EstadoEnemigo.Idle;
+                    GenerarPuntoPatrulla();
+                }
+                else
+                {
+                    PerseguirJugador();
+                }
+                break;
+
+            case EstadoEnemigo.Atacando:
+                if (distanciaAlJugador > rangoAtaque)
+                {
+                    estadoActual = EstadoEnemigo.Persiguiendo;
+                    estaAtacando = false;
+                }
+                else
+                {
+                    AtacarJugador();
+                }
+                break;
+        }
+
+        // Actualizar animaciones
+        ActualizarAnimaciones();
+    }
+
+    void ModoIdle()
+    {
+        rb.velocity = Vector2.zero;
+    }
+
+    void ModoPatrulla()
+    {
+        // Si está esperando
+        if (tiempoEsperaActual > 0)
+        {
+            tiempoEsperaActual -= Time.deltaTime;
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
+        // Moverse hacia el destino
+        Vector2 direccion = (destinoPatrulla - (Vector2)transform.position).normalized;
+        rb.velocity = direccion * velocidadMovimiento;
+        ultimaDireccion = direccion;
+
+        // Si llegó al destino, generar nuevo punto
+        if (Vector2.Distance(transform.position, destinoPatrulla) < 0.5f)
+        {
+            tiempoEsperaActual = tiempoEsperaPatrulla;
+            GenerarPuntoPatrulla();
+        }
+    }
+
+    void PerseguirJugador()
+    {
+        if (jugador == null) return;
+
+        Vector2 direccion = (jugador.position - transform.position).normalized;
+        rb.velocity = direccion * velocidadPersecucion;
+        ultimaDireccion = direccion;
+    }
+
+    void AtacarJugador()
+    {
+        rb.velocity = Vector2.zero;
+
+        // Mirar hacia el jugador
+        if (jugador != null)
+        {
+            ultimaDireccion = (jugador.position - transform.position).normalized;
+        }
+
+        if (puedeAtacar && !estaAtacando)
+        {
+            StartCoroutine(EjecutarAtaque());
+        }
+    }
+
+    IEnumerator EjecutarAtaque()
+    {
+        estaAtacando = true;
+        puedeAtacar = false;
+
+        // Activar animación de ataque
+        if (animator != null)
+        {
+            animator.SetTrigger("Atacando");
+        }
+
+        // Pequeña espera para sincronizar con la animación
+        yield return new WaitForSeconds(0.2f);
+
+        // Detectar y dañar al jugador
+        Collider2D[] objetosGolpeados = Physics2D.OverlapCircleAll(transform.position, rangoAtaque, capaJugador);
+        foreach (Collider2D obj in objetosGolpeados)
+        {
+            PlayerController jugadorScript = obj.GetComponent<PlayerController>();
+            if (jugadorScript != null)
+            {
+                jugadorScript.RecibirDaño(dañoAtaque);
+                Debug.Log("Enemigo golpeó al jugador por " + dañoAtaque + " de daño");
+            }
+        }
+
+        // Esperar antes de poder atacar de nuevo
+        yield return new WaitForSeconds(tiempoEntreAtaques);
+        puedeAtacar = true;
+        estaAtacando = false;
+    }
+
+    void GenerarPuntoPatrulla()
+    {
+        // Generar un punto aleatorio dentro del rango de patrullaje
+        Vector2 puntoAleatorio = Random.insideUnitCircle * rangoPatrullaje;
+        destinoPatrulla = puntoInicial + puntoAleatorio;
+    }
+
+    void BuscarJugador()
+    {
+        GameObject jugadorObj = GameObject.FindGameObjectWithTag("Player");
+        if (jugadorObj != null)
+        {
+            jugador = jugadorObj.transform;
+        }
+    }
+
+    void ActualizarAnimaciones()
+    {
+        if (animator == null) return;
+
+        // Actualizar parámetros de velocidad para animaciones de movimiento
+        animator.SetFloat("VelocidadX", ultimaDireccion.x);
+        animator.SetFloat("VelocidadY", ultimaDireccion.y);
+
+        // Puedes agregar más parámetros según tus animaciones
+        animator.SetBool("EnMovimiento", rb.velocity.magnitude > 0.1f);
+    }
+
+    public void RecibirDaño(int cantidad)
+    {
+        if (estadoActual == EstadoEnemigo.Muerto)
+            return;
+
+        vidaActual -= cantidad;
+        Debug.Log("Enemigo recibió " + cantidad + " de daño. Vida restante: " + vidaActual);
+
+        // Efecto visual de daño
+        StartCoroutine(EfectoGolpe());
+
+        // Si recibe daño, empezar a perseguir al jugador
+        if (estadoActual != EstadoEnemigo.Atacando && estadoActual != EstadoEnemigo.Persiguiendo)
+        {
+            estadoActual = EstadoEnemigo.Persiguiendo;
+        }
+
+        if (vidaActual <= 0)
+        {
+            Morir();
+        }
+    }
+
+    IEnumerator EfectoGolpe()
+    {
+        if (spriteRenderer != null)
+        {
+            Color colorOriginal = spriteRenderer.color;
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.15f);
+            spriteRenderer.color = colorOriginal;
+        }
+    }
+
+    void Morir()
+    {
+        estadoActual = EstadoEnemigo.Muerto;
+        Debug.Log("Enemigo eliminado");
+
+        // Detener movimiento
+        rb.velocity = Vector2.zero;
+
+        // Desactivar colisiones
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = false;
+
+        // Animación de muerte si existe
+        if (animator != null)
+        {
+            animator.SetTrigger("Morir");
+        }
+
+        // Destruir después de un tiempo (para permitir animación de muerte)
+        StartCoroutine(DestruirDespuesDeTiempo(1f));
+    }
+
+    IEnumerator DestruirDespuesDeTiempo(float tiempo)
+    {
+        yield return new WaitForSeconds(tiempo);
+
+        // Aquí puedes agregar efectos adicionales:
+        // - Spawn de items
+        // - Efectos de partículas
+        // - Sonidos
+
+        Destroy(gameObject);
+    }
+
+    // Visualizar rangos en el editor
+    void OnDrawGizmosSelected()
+    {
+        // Rango de detección (amarillo)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, rangoDeteccion);
+
+        // Rango de ataque (rojo)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, rangoAtaque);
+
+        // Rango de patrullaje (azul) - solo si está activado
+        if (patrulla)
+        {
+            Vector3 puntoInicio = Application.isPlaying ? puntoInicial : transform.position;
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(puntoInicio, rangoPatrullaje);
+        }
+    }
+
+    // Getters públicos
+    public int ObtenerVidaActual() { return vidaActual; }
+    public int ObtenerVidaMaxima() { return vidaMaxima; }
+    public EstadoEnemigo ObtenerEstado() { return estadoActual; }
+}
