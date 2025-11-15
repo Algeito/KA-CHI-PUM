@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class Enemigo : MonoBehaviour
 {
-    [Header("Estad�sticas")] public int vidaMaxima = 50;
+    [Header("Estadisticas")] public int vidaMaxima = 50;
     private int vidaActual;
     public int danioAtaque = 5;
 
     [Header("Movimiento")] public float velocidadMovimiento = 2f;
     public float velocidadPersecucion = 3f;
 
-    [Header("Detecci�n y Combate")] public float rangoDeteccion = 5f;
+    [Header("Deteccion y Combate")] public float rangoDeteccion = 5f;
     public float rangoAtaque = 1.5f;
     public float tiempoEntreAtaques = 1.5f;
     public LayerMask capaJugador;
@@ -270,11 +270,11 @@ public class Enemigo : MonoBehaviour
         if (animator == null) return;
 
         // Actualizar par�metros de velocidad para animaciones de movimiento
-        animator.SetFloat("VelocidadX", ultimaDireccion.x);
-        animator.SetFloat("VelocidadY", ultimaDireccion.y);
+        animator.SetFloat("Velocidad_X", ultimaDireccion.x);
+        animator.SetFloat("Velocidad_Y", ultimaDireccion.y);
 
         // Puedes agregar m�s par�metros seg�n tus animaciones
-        animator.SetBool("EnMovimiento", rb.velocity.magnitude > 0.1f);
+        animator.SetBool("En_Movimiento", rb.velocity.magnitude > 0.1f);
     }
 
     public void RecibirDanio(int cantidad)
@@ -283,7 +283,7 @@ public class Enemigo : MonoBehaviour
             return;
 
         vidaActual -= cantidad;
-        Debug.Log("Enemigo recibi� " + cantidad + " de da�o. Vida restante: " + vidaActual);
+        Debug.Log("Enemigo recibio " + cantidad + " de danio. Vida restante: " + vidaActual);
 
         // Efecto visual de da�o
         StartCoroutine(EfectoGolpe());
@@ -366,7 +366,7 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // Getters p�blicos
+    // Getters publicos
     public int ObtenerVidaActual()
     {
         return vidaActual;
