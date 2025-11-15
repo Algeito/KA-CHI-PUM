@@ -1,12 +1,14 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    private Vector2 ultimaDireccionMostrada = Vector2.zero;
+    private bool ultimoEstadoMovimiento = false;
     [Header("Movimiento")]
     public float velocidadMovimiento = 5f;
-
+    public float suavizadoMovimiento = 0.1f;
+    
     [Header("Combate")]
     public float rangoAtaque = 1f;
     public int danioAtaque = 10;
@@ -21,95 +23,139 @@ public class PlayerController : MonoBehaviour
     // Referencias privadas
     private Rigidbody2D rb;
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    
+    // Variables de movimiento
     private Vector2 movimiento;
+    private Vector2 movimientoSuavizado;
+    private Vector2 velocidadActual;
     private Vector2 ultimaDireccion = Vector2.down;
-    private bool puedeAtacar = true;
+    
+    // Estados
     private bool estaAtacando = false;
+    private bool puedeAtacar = true;
 
-    // Nombres de par�metros del Animator
+    // Hashes del Animator
     private int velocidadXHash;
     private int velocidadYHash;
     private int atacandoHash;
+    private int enMovimientoHash;
     private int direccionAtaqueHash;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         vidaActual = vidaMaxima;
 
-        // Cachear los hashes de los par�metros del Animator
-        velocidadXHash = Animator.StringToHash("VelocidadX");
-        velocidadYHash = Animator.StringToHash("VelocidadY");
+        
+        velocidadXHash = Animator.StringToHash("Velocidad_X");
+        velocidadYHash = Animator.StringToHash("Velocidad_Y");
         atacandoHash = Animator.StringToHash("Atacando");
-        direccionAtaqueHash = Animator.StringToHash("DireccionAtaque");
+        enMovimientoHash = Animator.StringToHash("En_Movimiento");
+        direccionAtaqueHash = Animator.StringToHash("Direccion_Ataque");
     }
 
     void Update()
     {
-        // Obtener input de movimiento
         if (!estaAtacando)
         {
             movimiento.x = Input.GetAxisRaw("Horizontal");
             movimiento.y = Input.GetAxisRaw("Vertical");
 
-            // Guardar la �ltima direcci�n si hay movimiento
             if (movimiento.magnitude > 0)
             {
                 ultimaDireccion = movimiento.normalized;
             }
-
-            // Actualizar animaciones de movimiento
-            ActualizarAnimacionMovimiento();
+        }
+        else
+        {
+            movimiento = Vector2.zero;
         }
 
         // Input de ataque
         if (Input.GetKeyDown(KeyCode.Space) && puedeAtacar && !estaAtacando)
         {
-            Atacar();
+            StartCoroutine(EjecutarAtaque());
         }
+
+        ActualizarAnimaciones();
     }
 
     void FixedUpdate()
     {
-        // Aplicar movimiento
         if (!estaAtacando)
         {
-            rb.MovePosition(rb.position + movimiento.normalized * (velocidadMovimiento * Time.fixedDeltaTime));
+            Vector2 movimientoObjetivo = movimiento.normalized * velocidadMovimiento;
+            movimientoSuavizado = Vector2.SmoothDamp(
+                movimientoSuavizado, 
+                movimientoObjetivo, 
+                ref velocidadActual, 
+                suavizadoMovimiento
+            );
+            
+            rb.velocity = movimientoSuavizado;
+        }
+        else
+        {
+            rb.velocity = Vector2.zero;
         }
     }
 
-    void ActualizarAnimacionMovimiento()
+    void ActualizarAnimaciones()
     {
-        animator.SetFloat(velocidadXHash, movimiento.x);
-        animator.SetFloat(velocidadYHash, movimiento.y);
+        if (animator == null) return;
+
+        Vector2 direccionAnimacion = movimiento.magnitude > 0 ? movimiento.normalized : ultimaDireccion;
+        bool enMovimientoActual = movimiento.magnitude > 0 && !estaAtacando;
+
+        // SOLO mostrar debug cuando algo CAMBIE
+        if (direccionAnimacion != ultimaDireccionMostrada || enMovimientoActual != ultimoEstadoMovimiento)
+        {
+            Debug.Log($"[CAMBIO] Dirección: ({direccionAnimacion.x:F2}, {direccionAnimacion.y:F2}) | EnMovimiento: {enMovimientoActual} | Atacando: {estaAtacando}");
+            ultimaDireccionMostrada = direccionAnimacion;
+            ultimoEstadoMovimiento = enMovimientoActual;
+        }
+
+        animator.SetFloat(velocidadXHash, direccionAnimacion.x);
+        animator.SetFloat(velocidadYHash, direccionAnimacion.y);
+        animator.SetBool(enMovimientoHash, enMovimientoActual);
     }
 
-    void Atacar()
+    IEnumerator EjecutarAtaque()
     {
         estaAtacando = true;
         puedeAtacar = false;
 
-        // Determinar direcci�n de ataque (0=Abajo, 1=Arriba, 2=Derecha, 3=Izquierda)
-        int direccion = ObtenerDireccionAtaque();
-        animator.SetInteger(direccionAtaqueHash, direccion);
-        animator.SetTrigger(atacandoHash);
+        movimiento = Vector2.zero;
+        rb.velocity = Vector2.zero;
+        movimientoSuavizado = Vector2.zero;
 
-        // Detectar enemigos en rango
+        if (animator != null)
+        {
+            int direccion = ObtenerDireccionAtaque();
+            animator.SetInteger(direccionAtaqueHash, direccion);
+            animator.SetTrigger(atacandoHash);
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
         Collider2D[] enemigosGolpeados = Physics2D.OverlapCircleAll(puntoAtaque.position, rangoAtaque, capasEnemigos);
-
-        // Aplicar da�o a los enemigos
         foreach (Collider2D enemigo in enemigosGolpeados)
         {
             Enemigo enemigoScript = enemigo.GetComponent<Enemigo>();
             if (enemigoScript != null)
             {
                 enemigoScript.RecibirDanio(danioAtaque);
+                Debug.Log("Jugador golpeó al enemigo por " + danioAtaque + " de daño");
             }
         }
 
-        // Reiniciar estado de ataque
-        StartCoroutine(ReiniciarAtaque());
+        yield return new WaitForSeconds(tiempoEntreAtaques - 0.2f);
+    
+        estaAtacando = false;
+        puedeAtacar = true;
     }
 
     int ObtenerDireccionAtaque()
@@ -119,24 +165,20 @@ public class PlayerController : MonoBehaviour
 
         if (anguloY > anguloX)
         {
-            return ultimaDireccion.y > 0 ? 1 : 0; // Arriba : Abajo
+            return ultimaDireccion.y > 0 ? 1 : 0;
         }
         else
         {
-            return ultimaDireccion.x > 0 ? 2 : 3; // Derecha : Izquierda
+            return ultimaDireccion.x > 0 ? 2 : 3;
         }
-    }
-
-    IEnumerator ReiniciarAtaque()
-    {
-        yield return new WaitForSeconds(tiempoEntreAtaques);
-        estaAtacando = false;
-        puedeAtacar = true;
     }
 
     public void RecibirDanio(int cantidad)
     {
         vidaActual -= cantidad;
+        Debug.Log("Jugador recibió " + cantidad + " de daño. Vida restante: " + vidaActual);
+
+        StartCoroutine(EfectoGolpe());
 
         if (vidaActual <= 0)
         {
@@ -144,24 +186,31 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    IEnumerator EfectoGolpe()
+    {
+        if (spriteRenderer != null)
+        {
+            Color colorOriginal = spriteRenderer.color;
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.15f);
+            spriteRenderer.color = colorOriginal;
+        }
+    }
+
     void Morir()
     {
         Debug.Log("El jugador ha muerto!");
-        // Aqu� puedes agregar l�gica de game over
-        // Por ejemplo: mostrar pantalla de game over, reiniciar nivel, etc.
     }
 
-    // Visualizar el rango de ataque en el editor
     void OnDrawGizmosSelected()
     {
-        if (puntoAtaque == null)
-            return;
-
+        if (puntoAtaque == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(puntoAtaque.position, rangoAtaque);
     }
 
-    // Getters p�blicos
     public int ObtenerVidaActual() { return vidaActual; }
     public int ObtenerVidaMaxima() { return vidaMaxima; }
+    
+    
 }
