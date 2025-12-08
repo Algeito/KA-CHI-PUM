@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\KA-CHI-PUM",
+    "\\KA-CHI-PUM\\Assets",
+    "\\KA-CHI-PUM\\Assets\\Scripts"
   ],
-  "SelectedNode": "\\KA-CHI-PUM.sln",
   "PreviewInSolutionExplorer": false
 }
