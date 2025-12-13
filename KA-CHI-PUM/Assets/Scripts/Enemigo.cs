@@ -269,12 +269,9 @@ public class Enemigo : MonoBehaviour
     {
         if (animator == null) return;
 
-        // Actualizar par�metros de velocidad para animaciones de movimiento
-        animator.SetFloat("Velocidad_X", ultimaDireccion.x);
-        animator.SetFloat("Velocidad_Y", ultimaDireccion.y);
+       
 
-        // Puedes agregar m�s par�metros seg�n tus animaciones
-        animator.SetBool("En_Movimiento", rb.velocity.magnitude > 0.1f);
+       
     }
 
     public void RecibirDanio(int cantidad)
@@ -324,11 +321,7 @@ public class Enemigo : MonoBehaviour
         if (col != null)
             col.enabled = false;
 
-        // Animaci�n de muerte si existe
-        if (animator != null)
-        {
-            animator.SetTrigger("Morir");
-        }
+        
 
         // Destruir despu�s de un tiempo (para permitir animaci�n de muerte)
         StartCoroutine(DestruirDespuesDeTiempo(1f));
