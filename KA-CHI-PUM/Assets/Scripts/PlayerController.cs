@@ -113,7 +113,7 @@ public class PlayerController : MonoBehaviour
         // SOLO mostrar debug cuando algo CAMBIE
         if (direccionAnimacion != ultimaDireccionMostrada || enMovimientoActual != ultimoEstadoMovimiento)
         {
-            Debug.Log($"[CAMBIO] Dirección: ({direccionAnimacion.x:F2}, {direccionAnimacion.y:F2}) | EnMovimiento: {enMovimientoActual} | Atacando: {estaAtacando}");
+            
             ultimaDireccionMostrada = direccionAnimacion;
             ultimoEstadoMovimiento = enMovimientoActual;
         }
