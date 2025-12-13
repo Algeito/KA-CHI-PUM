@@ -141,14 +141,26 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
+        // DETECCIÓN DE ENEMIGOS MEJORADA
         Collider2D[] enemigosGolpeados = Physics2D.OverlapCircleAll(puntoAtaque.position, rangoAtaque, capasEnemigos);
+    
         foreach (Collider2D enemigo in enemigosGolpeados)
         {
+            // Intentar dañar Enemigo normal
             Enemigo enemigoScript = enemigo.GetComponent<Enemigo>();
             if (enemigoScript != null)
             {
                 enemigoScript.RecibirDanio(danioAtaque);
-                Debug.Log("Jugador golpeó al enemigo por " + danioAtaque + " de daño");
+                Debug.Log($"Jugador golpeó a {enemigo.name} por {danioAtaque} de daño");
+                continue; // Pasar al siguiente enemigo
+            }
+
+            // Intentar dañar Minotauro
+            MinotauroController minotauroScript = enemigo.GetComponent<MinotauroController>();
+            if (minotauroScript != null)
+            {
+                minotauroScript.RecibirDanio(danioAtaque);
+                Debug.Log($"Jugador golpeó al Minotauro por {danioAtaque} de daño");
             }
         }
 

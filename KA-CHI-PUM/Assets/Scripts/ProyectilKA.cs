@@ -8,7 +8,6 @@ public class ProyectilKA : MonoBehaviour
 
     private void Start()
     {
-        // Auto-destruirse después de X segundos
         Destroy(gameObject, tiempoVida);
     }
 
@@ -17,18 +16,32 @@ public class ProyectilKA : MonoBehaviour
         // Si colisiona con enemigo
         if (collision.CompareTag("Enemy"))
         {
-            // Intentar hacer daño usando el método correcto de tu script
+            int danioEntero = Mathf.RoundToInt(danio);
+            bool dañoAplicado = false;
+
+            // Intentar dañar Enemigo normal
             Enemigo enemigo = collision.GetComponent<Enemigo>();
             if (enemigo != null)
             {
-                // Convertir float a int porque tu método recibe int
-                int danioEntero = Mathf.RoundToInt(danio);
                 enemigo.RecibirDanio(danioEntero);
+                dañoAplicado = true;
                 Debug.Log($"Proyectil golpeó a {collision.name} por {danioEntero} de daño");
             }
-            
-            // Destruir proyectil
-            Destroy(gameObject);
+
+            // Intentar dañar Minotauro
+            MinotauroController minotauro = collision.GetComponent<MinotauroController>();
+            if (minotauro != null)
+            {
+                minotauro.RecibirDanio(danioEntero);
+                dañoAplicado = true;
+                Debug.Log($"Proyectil golpeó al Minotauro por {danioEntero} de daño");
+            }
+
+            // Si se aplicó daño, destruir proyectil
+            if (dañoAplicado)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }
