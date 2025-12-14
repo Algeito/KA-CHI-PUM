@@ -268,6 +268,10 @@ public class MinotauroController : MonoBehaviour
 
         // Esperar a que la animación llegue al punto de impacto (aprox. 40% de la animación)
         yield return new WaitForSeconds(duracionAtaque * 0.4f);
+        
+        Debug.Log($"Minotauro atacando desde posición: {puntoAtaque.position}");
+        Debug.Log($"Radio de ataque: {rangoAtaque * 0.5f}");
+        Debug.Log($"Capa jugador: {capaJugador.value}");
 
         // Detectar y dañar al jugador
         if (puntoAtaque != null)
