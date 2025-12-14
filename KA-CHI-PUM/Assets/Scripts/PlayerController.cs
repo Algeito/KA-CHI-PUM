@@ -191,6 +191,13 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Jugador recibió " + cantidad + " de daño. Vida restante: " + vidaActual);
 
         StartCoroutine(EfectoGolpe());
+    
+        // Actualizar UI
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.ActualizarVida(vidaActual, vidaMaxima);
+        }
 
         if (vidaActual <= 0)
         {
@@ -212,7 +219,51 @@ public class PlayerController : MonoBehaviour
     void Morir()
     {
         Debug.Log("El jugador ha muerto!");
+    
+        // Desactivar controles
+        enabled = false;
+    
+        // Detener movimiento
+        rb.velocity = Vector2.zero;
+    
+        // Desactivar colisión
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+    
+        // Notificar al sistema de vida (si existe)
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.OnJugadorMuerto();
+        }
+    
+        // Evento de muerte para otros sistemas
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.OnJugadorMurio();
+        }
     }
+    
+    // Agregar método para curar (opcional pero útil)
+    public void Curar(int cantidad)
+    {
+        vidaActual += cantidad;
+        vidaActual = Mathf.Min(vidaActual, vidaMaxima);
+        Debug.Log($"Jugador curado {cantidad} HP. Vida actual: {vidaActual}/{vidaMaxima}");
+    
+        // Actualizar UI
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.ActualizarVida(vidaActual, vidaMaxima);
+        }
+    }
+    
+    
 
     void OnDrawGizmosSelected()
     {
