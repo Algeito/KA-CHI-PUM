@@ -232,14 +232,14 @@ MonoBehaviour:
   velocidadCaminar: 2
   velocidadCorrer: 4
   puedeCorrer: 1
-  rangoDeteccion: 7
-  rangoAtaque: 2
-  tiempoEntreAtaques: 2
+  rangoDeteccion: 15
+  rangoAtaque: 3
+  tiempoEntreAtaques: 1
   duracionAtaque: 0.8
   puntoAtaque: {fileID: 5671054715337971662}
   capaJugador:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   patrullar: 1
   rangoPatrullaje: 5
   tiempoEsperaPatrulla: 3
