@@ -208,7 +208,7 @@ MonoBehaviour:
   puntoDisparo: {fileID: 3311636998134564325}
   rangoAtaque: 15
   tiempoEntreRafagas: 2
-  proyectilesPorRafaga: 8
+  proyectilesPorRafaga: 5
   tiempoEntreProyectiles: 0.15
   velocidadProyectil: 5
   anguloDispersion: 15

@@ -3,221 +3,194 @@ using UnityEngine;
 
 public class HabilidadCHI : MonoBehaviour
 {
-    [Header("‚ïê‚ïê‚ïê ACTIVACI√ìN ‚ïê‚ïê‚ïê")]
-    [SerializeField] private KeyCode teclaActivacion = KeyCode.Q;
-    [SerializeField] private float cooldown = 8f;
-    private bool estaEnCooldown = false;
-    private bool estaActiva = false;
+    [Header("ConfiguraciÛn de CHI")]
+    public GameObject prefabEfectoCHI; // Prefab del efecto visual
+    public Transform puntoOrigen; // Desde donde se origina el CHI
+    public float radioArea = 3f; // Radio del ·rea de efecto
+    public int danioBase = 25;
+    public float duracionEfecto = 0.5f; // DuraciÛn de la animaciÛn/efecto
+    public float tiempoRecarga = 3f; // Cooldown de la habilidad
+    public LayerMask capaEnemigos;
+    public KeyCode teclaActivacion = KeyCode.Q;
 
-    [Header("‚ïê‚ïê‚ïê DA√ëO Y √ÅREA ‚ïê‚ïê‚ïê")]
-    [SerializeField] private float radioDanio = 3f;
-    [SerializeField] private int danioBase = 5;
-    [SerializeField] private float duracionHabilidad = 5f;
-    [SerializeField] private float tiempoEntrePulsos = 0.5f;
+    [Header("Efectos Visuales")]
+    public Color colorDanio = Color.cyan;
+    public float intensidadShake = 0.1f;
+    public float duracionShake = 0.2f;
 
-    [Header("‚ïê‚ïê‚ïê DETECCI√ìN DE ENEMIGOS ‚ïê‚ïê‚ïê")]
-    [SerializeField] private bool usarTag = true;
-    [SerializeField] private string tagEnemigo = "Enemy";
-    [SerializeField] private bool usarLayer = true;
-    [SerializeField] private LayerMask capaEnemigos;
+    private bool puedeUsar = true;
+    private float tiempoProximoUso = 0f;
+    private Animator animator;
+    private PlayerController playerController;
 
-    [Header("‚ïê‚ïê‚ïê EFECTO VISUAL ‚ïê‚ïê‚ïê")]
-    [SerializeField] private GameObject prefabEfectoCHI; // ‚Üê Arrastra aqu√≠ tu prefab
-    [SerializeField] private bool mostrarEfectoVisual = true;
+    // Hashes para optimizaciÛn
+    private int chiHash;
 
-    private GameObject efectoVisual;
-    private float tiempoUltimoUso = -999f;
-
-    private void Update()
+    void Start()
     {
-        // Detectar tecla Q
-        if (Input.GetKeyDown(teclaActivacion))
+        animator = GetComponent<Animator>();
+        playerController = GetComponent<PlayerController>();
+
+        // Crear hash para la animaciÛn
+        chiHash = Animator.StringToHash("UsandoCHI");
+
+        // Si no se asignÛ punto de origen, usar la posiciÛn del jugador
+        if (puntoOrigen == null)
         {
-            IntentarActivar();
+            puntoOrigen = transform;
         }
     }
 
-    private void IntentarActivar()
+    void Update()
     {
-        // Verificar cooldown
-        if (estaEnCooldown)
+        // Verificar si se puede usar la habilidad
+        if (Time.time >= tiempoProximoUso)
         {
-            float tiempoRestante = cooldown - (Time.time - tiempoUltimoUso);
-            Debug.Log($"CHI en cooldown. Espera {tiempoRestante:F1} segundos");
-            return;
+            puedeUsar = true;
         }
 
-        // Verificar si ya est√° activa
-        if (estaActiva)
+        // Input para activar CHI
+        if (Input.GetKeyDown(teclaActivacion) && puedeUsar)
         {
-            Debug.Log("CHI ya est√° activa");
-            return;
+            StartCoroutine(EjecutarCHI());
         }
-
-        // Activar habilidad
-        ActivarCHI();
     }
 
-    private void ActivarCHI()
+    IEnumerator EjecutarCHI()
     {
-        Debug.Log("=== HABILIDAD CHI ACTIVADA ===");
-        tiempoUltimoUso = Time.time;
-        estaEnCooldown = true;
-        StartCoroutine(EjecutarCHI());
-        StartCoroutine(CooldownTimer());
-    }
+        puedeUsar = false;
+        tiempoProximoUso = Time.time + tiempoRecarga;
 
-    private IEnumerator EjecutarCHI()
-    {
-        estaActiva = true;
-        float tiempoTranscurrido = 0f;
-        float siguientePulso = 0f;
+        Debug.Log("°CHI activado! DaÒo en ·rea de radio: " + radioArea);
+
+        // Activar animaciÛn si existe
+        if (animator != null)
+        {
+            animator.SetTrigger(chiHash);
+        }
 
         // Crear efecto visual
-        if (mostrarEfectoVisual)
+        GameObject efectoVisual = null;
+        if (prefabEfectoCHI != null)
         {
-            CrearEfectoVisual();
+            efectoVisual = Instantiate(prefabEfectoCHI, puntoOrigen.position, Quaternion.identity);
+
+            // Escalar el efecto seg˙n el radio
+            efectoVisual.transform.localScale = Vector3.one * (radioArea / 1.5f);
+
+            // Destruir el efecto despuÈs de la duraciÛn
+            Destroy(efectoVisual, duracionEfecto);
         }
 
-        // Bucle principal de la habilidad
-        while (tiempoTranscurrido < duracionHabilidad)
+        // PequeÒa espera para sincronizar con la animaciÛn
+        yield return new WaitForSeconds(0.15f);
+
+        // Detectar todos los enemigos en el ·rea
+        Collider2D[] enemigosEnArea = Physics2D.OverlapCircleAll(
+            puntoOrigen.position,
+            radioArea,
+            capaEnemigos
+        );
+
+        // Aplicar daÒo a todos los enemigos detectados
+        int enemigosGolpeados = 0;
+        foreach (Collider2D enemigo in enemigosEnArea)
         {
-            // Mover efecto visual con el jugador
-            if (efectoVisual != null)
+            Enemigo enemigoScript = enemigo.GetComponent<Enemigo>();
+            if (enemigoScript != null)
             {
-                efectoVisual.transform.position = transform.position;
-            }
+                // Calcular daÒo (puedes aÒadir variaciones aquÌ)
+                int danioFinal = danioBase;
 
-            // Aplicar da√±o en pulsos
-            if (tiempoTranscurrido >= siguientePulso)
-            {
-                AplicarDanioEnArea();
-                siguientePulso += tiempoEntrePulsos;
-            }
+                // Aplicar el daÒo
+                enemigoScript.RecibirDanio(danioFinal);
+                enemigosGolpeados++;
 
+                // Efecto visual en el enemigo
+                StartCoroutine(EfectoGolpeEnemigo(enemigo.gameObject));
+
+                Debug.Log($"CHI golpeÛ a {enemigo.name} por {danioFinal} de daÒo");
+            }
+        }
+
+        Debug.Log($"CHI impactÛ a {enemigosGolpeados} enemigos");
+
+        // Efecto de screen shake si hay enemigos golpeados
+        if (enemigosGolpeados > 0)
+        {
+            StartCoroutine(ScreenShake());
+        }
+    }
+
+    IEnumerator EfectoGolpeEnemigo(GameObject enemigo)
+    {
+        SpriteRenderer sprite = enemigo.GetComponent<SpriteRenderer>();
+        if (sprite != null)
+        {
+            Color colorOriginal = sprite.color;
+            sprite.color = colorDanio;
+            yield return new WaitForSeconds(0.15f);
+            sprite.color = colorOriginal;
+        }
+    }
+
+    IEnumerator ScreenShake()
+    {
+        Camera mainCam = Camera.main;
+        if (mainCam == null) yield break;
+
+        Vector3 posicionOriginal = mainCam.transform.localPosition;
+        float tiempoTranscurrido = 0f;
+
+        while (tiempoTranscurrido < duracionShake)
+        {
+            float x = Random.Range(-1f, 1f) * intensidadShake;
+            float y = Random.Range(-1f, 1f) * intensidadShake;
+
+            mainCam.transform.localPosition = posicionOriginal + new Vector3(x, y, 0);
             tiempoTranscurrido += Time.deltaTime;
             yield return null;
         }
 
-        // Limpiar
-        if (efectoVisual != null)
-        {
-            Destroy(efectoVisual);
-        }
-
-        estaActiva = false;
-        Debug.Log("=== HABILIDAD CHI TERMINADA ===");
+        mainCam.transform.localPosition = posicionOriginal;
     }
 
-    private void AplicarDanioEnArea()
+    // Visualizar el ·rea de efecto en el editor
+    void OnDrawGizmosSelected()
     {
-        int enemigosAfectados = 0;
+        Vector3 centro = puntoOrigen != null ? puntoOrigen.position : transform.position;
 
-        // M√âTODO 1: Buscar por Tag
-        if (usarTag)
-        {
-            GameObject[] enemigos = GameObject.FindGameObjectsWithTag(tagEnemigo);
-            
-            foreach (GameObject enemigo in enemigos)
-            {
-                float distancia = Vector2.Distance(transform.position, enemigo.transform.position);
-                
-                if (distancia <= radioDanio)
-                {
-                    if (DaniarEnemigo(enemigo))
-                    {
-                        enemigosAfectados++;
-                    }
-                }
-            }
-        }
+        // Dibujar el radio del ·rea de efecto
+        Gizmos.color = new Color(0, 1, 1, 0.3f); // Cyan semi-transparente
+        Gizmos.DrawSphere(centro, radioArea);
 
-        // M√âTODO 2: Buscar por Layer
-        if (usarLayer)
-        {
-            Collider2D[] colisiones = Physics2D.OverlapCircleAll(transform.position, radioDanio, capaEnemigos);
-            
-            foreach (Collider2D col in colisiones)
-            {
-                if (DaniarEnemigo(col.gameObject))
-                {
-                    enemigosAfectados++;
-                }
-            }
-        }
-
-        if (enemigosAfectados > 0)
-        {
-            Debug.Log($"CHI da√±√≥ a {enemigosAfectados} enemigos por {danioBase} cada uno");
-        }
-    }
-
-    private bool DaniarEnemigo(GameObject enemigo)
-    {
-        // Intentar da√±ar como Enemigo (Mago Rojo)
-        Enemigo scriptEnemigo = enemigo.GetComponent<Enemigo>();
-        if (scriptEnemigo != null)
-        {
-            if (scriptEnemigo.ObtenerEstadoActual() != Enemigo.EstadoEnemigo.Muerto)
-            {
-                scriptEnemigo.RecibirDanio(danioBase);
-                Debug.Log($"CHI ‚Üí Mago '{enemigo.name}' recibi√≥ {danioBase} de da√±o");
-                return true;
-            }
-            return false;
-        }
-
-        // Intentar da√±ar como Minotauro
-        MinotauroController scriptMinotauro = enemigo.GetComponent<MinotauroController>();
-        if (scriptMinotauro != null)
-        {
-            if (!scriptMinotauro.EstaMuerto())
-            {
-                scriptMinotauro.RecibirDanio(danioBase);
-                Debug.Log($"CHI ‚Üí Minotauro '{enemigo.name}' recibi√≥ {danioBase} de da√±o");
-                return true;
-            }
-            return false;
-        }
-
-        Debug.LogWarning($"CHI detect√≥ '{enemigo.name}' pero no tiene script de enemigo");
-        return false;
-    }
-
-    private void CrearEfectoVisual()
-    {
-        if (prefabEfectoCHI != null)
-        {
-            // Usar tu prefab personalizado
-            efectoVisual = Instantiate(prefabEfectoCHI, transform.position, Quaternion.identity);
-            efectoVisual.transform.SetParent(transform); // Seguir al jugador
-            
-            // Ajustar escala seg√∫n el radio de da√±o
-            float escalaBase = radioDanio / 1.5f; // Ajusta este divisor seg√∫n tu prefab
-            efectoVisual.transform.localScale = new Vector3(escalaBase, escalaBase, 1f);
-            
-            Debug.Log($"Efecto CHI creado con prefab en escala {escalaBase}");
-        }
-        else
-        {
-            Debug.LogWarning("No hay prefab asignado para el efecto CHI");
-        }
-    }
-
-    private IEnumerator CooldownTimer()
-    {
-        yield return new WaitForSeconds(cooldown);
-        estaEnCooldown = false;
-        Debug.Log("CHI lista para usar de nuevo");
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // Visualizar rango en el editor
-        Gizmos.color = new Color(0, 1, 1, 0.3f);
-        Gizmos.DrawSphere(transform.position, radioDanio);
-        
+        // Dibujar el borde del ·rea
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, radioDanio);
+        Gizmos.DrawWireSphere(centro, radioArea);
+
+        // InformaciÛn del cooldown
+        if (Application.isPlaying && !puedeUsar)
+        {
+            Gizmos.color = Color.red;
+            float progreso = 1f - ((tiempoProximoUso - Time.time) / tiempoRecarga);
+            Gizmos.DrawWireSphere(centro, radioArea * progreso);
+        }
+    }
+
+    // MÈtodos p˙blicos para acceder al estado de la habilidad
+    public bool PuedeUsarCHI()
+    {
+        return puedeUsar;
+    }
+
+    public float ObtenerTiempoRestanteCooldown()
+    {
+        return Mathf.Max(0, tiempoProximoUso - Time.time);
+    }
+
+    public float ObtenerProgresoCooldown()
+    {
+        if (puedeUsar) return 1f;
+        return 1f - (ObtenerTiempoRestanteCooldown() / tiempoRecarga);
     }
 }
