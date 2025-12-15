@@ -5,11 +5,10 @@ public class PlayerController : MonoBehaviour
 {
     private Vector2 ultimaDireccionMostrada = Vector2.zero;
     private bool ultimoEstadoMovimiento = false;
-
     [Header("Movimiento")]
     public float velocidadMovimiento = 5f;
     public float suavizadoMovimiento = 0.1f;
-
+    
     [Header("Combate")]
     public float rangoAtaque = 1f;
     public int danioAtaque = 10;
@@ -25,13 +24,13 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
-
+    
     // Variables de movimiento
     private Vector2 movimiento;
     private Vector2 movimientoSuavizado;
     private Vector2 velocidadActual;
     private Vector2 ultimaDireccion = Vector2.down;
-
+    
     // Estados
     private bool estaAtacando = false;
     private bool puedeAtacar = true;
@@ -50,6 +49,7 @@ public class PlayerController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         vidaActual = vidaMaxima;
 
+        
         velocidadXHash = Animator.StringToHash("Velocidad_X");
         velocidadYHash = Animator.StringToHash("Velocidad_Y");
         atacandoHash = Animator.StringToHash("Atacando");
@@ -74,6 +74,7 @@ public class PlayerController : MonoBehaviour
             movimiento = Vector2.zero;
         }
 
+        // Input de ataque
         if (Input.GetKeyDown(KeyCode.Space) && puedeAtacar && !estaAtacando)
         {
             StartCoroutine(EjecutarAtaque());
@@ -88,12 +89,12 @@ public class PlayerController : MonoBehaviour
         {
             Vector2 movimientoObjetivo = movimiento.normalized * velocidadMovimiento;
             movimientoSuavizado = Vector2.SmoothDamp(
-                movimientoSuavizado,
-                movimientoObjetivo,
-                ref velocidadActual,
+                movimientoSuavizado, 
+                movimientoObjetivo, 
+                ref velocidadActual, 
                 suavizadoMovimiento
             );
-
+            
             rb.velocity = movimientoSuavizado;
         }
         else
@@ -109,8 +110,10 @@ public class PlayerController : MonoBehaviour
         Vector2 direccionAnimacion = movimiento.magnitude > 0 ? movimiento.normalized : ultimaDireccion;
         bool enMovimientoActual = movimiento.magnitude > 0 && !estaAtacando;
 
+        // SOLO mostrar debug cuando algo CAMBIE
         if (direccionAnimacion != ultimaDireccionMostrada || enMovimientoActual != ultimoEstadoMovimiento)
         {
+            
             ultimaDireccionMostrada = direccionAnimacion;
             ultimoEstadoMovimiento = enMovimientoActual;
         }
@@ -138,19 +141,31 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
+        // DETECCIÓN DE ENEMIGOS MEJORADA
         Collider2D[] enemigosGolpeados = Physics2D.OverlapCircleAll(puntoAtaque.position, rangoAtaque, capasEnemigos);
+    
         foreach (Collider2D enemigo in enemigosGolpeados)
         {
+            // Intentar dañar Enemigo normal
             Enemigo enemigoScript = enemigo.GetComponent<Enemigo>();
             if (enemigoScript != null)
             {
                 enemigoScript.RecibirDanio(danioAtaque);
-                Debug.Log("Jugador golpeó al enemigo por " + danioAtaque + " de daño");
+                Debug.Log($"Jugador golpeó a {enemigo.name} por {danioAtaque} de daño");
+                continue; // Pasar al siguiente enemigo
+            }
+
+            // Intentar dañar Minotauro
+            MinotauroController minotauroScript = enemigo.GetComponent<MinotauroController>();
+            if (minotauroScript != null)
+            {
+                minotauroScript.RecibirDanio(danioAtaque);
+                Debug.Log($"Jugador golpeó al Minotauro por {danioAtaque} de daño");
             }
         }
 
         yield return new WaitForSeconds(tiempoEntreAtaques - 0.2f);
-
+    
         estaAtacando = false;
         puedeAtacar = true;
     }
@@ -173,22 +188,21 @@ public class PlayerController : MonoBehaviour
     public void RecibirDanio(int cantidad)
     {
         vidaActual -= cantidad;
-        vidaActual = Mathf.Max(vidaActual, 0); // No bajar de 0
         Debug.Log("Jugador recibió " + cantidad + " de daño. Vida restante: " + vidaActual);
 
         StartCoroutine(EfectoGolpe());
+    
+        // Actualizar UI
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.ActualizarVida(vidaActual, vidaMaxima);
+        }
 
         if (vidaActual <= 0)
         {
             Morir();
         }
-    }
-
-    public void Curar(int cantidad)
-    {
-        vidaActual += cantidad;
-        vidaActual = Mathf.Min(vidaActual, vidaMaxima); // No superar el máximo
-        Debug.Log("Jugador curado por " + cantidad + ". Vida actual: " + vidaActual);
     }
 
     IEnumerator EfectoGolpe()
@@ -205,8 +219,51 @@ public class PlayerController : MonoBehaviour
     void Morir()
     {
         Debug.Log("El jugador ha muerto!");
-        // Aquí puedes agregar lógica de Game Over
+    
+        // Desactivar controles
+        enabled = false;
+    
+        // Detener movimiento
+        rb.velocity = Vector2.zero;
+    
+        // Desactivar colisión
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+    
+        // Notificar al sistema de vida (si existe)
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.OnJugadorMuerto();
+        }
+    
+        // Evento de muerte para otros sistemas
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.OnJugadorMurio();
+        }
     }
+    
+    // Agregar método para curar (opcional pero útil)
+    public void Curar(int cantidad)
+    {
+        vidaActual += cantidad;
+        vidaActual = Mathf.Min(vidaActual, vidaMaxima);
+        Debug.Log($"Jugador curado {cantidad} HP. Vida actual: {vidaActual}/{vidaMaxima}");
+    
+        // Actualizar UI
+        VidaJugadorUI vidaUI = FindObjectOfType<VidaJugadorUI>();
+        if (vidaUI != null)
+        {
+            vidaUI.ActualizarVida(vidaActual, vidaMaxima);
+        }
+    }
+    
+    
 
     void OnDrawGizmosSelected()
     {
@@ -215,6 +272,8 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireSphere(puntoAtaque.position, rangoAtaque);
     }
 
-    public int ObtenerVidaActual() => vidaActual;
-    public int ObtenerVidaMaxima() => vidaMaxima;
+    public int ObtenerVidaActual() { return vidaActual; }
+    public int ObtenerVidaMaxima() { return vidaMaxima; }
+    
+    
 }
