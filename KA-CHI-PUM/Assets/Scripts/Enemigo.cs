@@ -4,19 +4,33 @@ using UnityEngine;
 
 public class Enemigo : MonoBehaviour
 {
-    [Header("Estad�sticas")] public int vidaMaxima = 50;
+    [Header("Estadisticas")] 
+    public int vidaMaxima = 50;
     private int vidaActual;
-    public int danioAtaque = 5;
+    public int danioProyectil = 5; // Daño de cada proyectil
 
-    [Header("Movimiento")] public float velocidadMovimiento = 2f;
+    [Header("Movimiento")] 
+    public float velocidadMovimiento = 2f;
     public float velocidadPersecucion = 3f;
+    public bool mantenerDistancia = true; // El mago mantiene distancia
+    public float distanciaIdeal = 5f; // Distancia preferida del jugador
 
-    [Header("Detecci�n y Combate")] public float rangoDeteccion = 5f;
-    public float rangoAtaque = 1.5f;
-    public float tiempoEntreAtaques = 1.5f;
+    [Header("Deteccion")] 
+    public float rangoDeteccion = 8f;
     public LayerMask capaJugador;
 
-    [Header("Patrullaje (Opcional)")] public bool patrulla = true;
+    [Header("Ataque Mágico")]
+    public GameObject prefabProyectil; // Prefab del proyectil
+    public Transform puntoDisparo; // Desde donde dispara
+    public float rangoAtaque = 7f; // Rango para empezar a disparar
+    public float tiempoEntreRafagas = 2f; // Tiempo entre ráfagas
+    public int proyectilesPorRafaga = 3; // Cantidad de proyectiles por ráfaga
+    public float tiempoEntreProyectiles = 0.15f; // Delay entre cada proyectil
+    public float velocidadProyectil = 5f;
+    public float anguloDispersion = 15f; // Ángulo de dispersión entre proyectiles
+
+    [Header("Patrullaje (Opcional)")] 
+    public bool patrulla = true;
     public float rangoPatrullaje = 3f;
     public float tiempoEsperaPatrulla = 2f;
 
@@ -27,8 +41,8 @@ public class Enemigo : MonoBehaviour
     private SpriteRenderer spriteRenderer;
 
     // Control de combate
-    private bool puedeAtacar = true;
-    private bool estaAtacando = false;
+    private bool puedeDisparar = true;
+    private bool estaDisparando = false;
 
     // Control de estados
     public enum EstadoEnemigo
@@ -47,9 +61,6 @@ public class Enemigo : MonoBehaviour
     private Vector2 destinoPatrulla;
     private float tiempoEsperaActual;
 
-    // Variables de animaci�n
-    private Vector2 ultimaDireccion = Vector2.down;
-
     void Start()
     {
         // Inicializar componentes
@@ -65,13 +76,25 @@ public class Enemigo : MonoBehaviour
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         }
 
-        // Guardar posici�n inicial
+        // Guardar posición inicial
         puntoInicial = transform.position;
 
         // Buscar al jugador
         BuscarJugador();
 
-        // Iniciar patrullaje si est� activado
+        // Validar configuración
+        if (prefabProyectil == null)
+        {
+            Debug.LogError($"Mago '{name}': ¡Falta asignar prefab de proyectil!");
+        }
+
+        if (puntoDisparo == null)
+        {
+            Debug.LogWarning($"Mago '{name}': No hay punto de disparo, usando posición del mago");
+            puntoDisparo = transform;
+        }
+
+        // Iniciar patrullaje si está activado
         if (patrulla)
         {
             GenerarPuntoPatrulla();
@@ -101,12 +124,11 @@ public class Enemigo : MonoBehaviour
 
         float distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
 
-        // M�quina de estados
+        // Máquina de estados
         switch (estadoActual)
         {
             case EstadoEnemigo.Idle:
                 ModoIdle();
-                // Verificar si detecta al jugador
                 if (distanciaAlJugador <= rangoDeteccion)
                 {
                     estadoActual = EstadoEnemigo.Persiguiendo;
@@ -115,17 +137,14 @@ public class Enemigo : MonoBehaviour
                 {
                     estadoActual = EstadoEnemigo.Patrullando;
                 }
-
                 break;
 
             case EstadoEnemigo.Patrullando:
                 ModoPatrulla();
-                // Verificar si detecta al jugador
                 if (distanciaAlJugador <= rangoDeteccion)
                 {
                     estadoActual = EstadoEnemigo.Persiguiendo;
                 }
-
                 break;
 
             case EstadoEnemigo.Persiguiendo:
@@ -135,28 +154,24 @@ public class Enemigo : MonoBehaviour
                 }
                 else if (distanciaAlJugador > rangoDeteccion)
                 {
-                    // Perdi� al jugador, volver a patrullar o idle
                     estadoActual = patrulla ? EstadoEnemigo.Patrullando : EstadoEnemigo.Idle;
                     GenerarPuntoPatrulla();
                 }
                 else
                 {
-                    PerseguirJugador();
+                    MoverHaciaJugador(distanciaAlJugador);
                 }
-
                 break;
 
             case EstadoEnemigo.Atacando:
-                if (distanciaAlJugador > rangoAtaque)
+                if (distanciaAlJugador > rangoAtaque && !estaDisparando)
                 {
                     estadoActual = EstadoEnemigo.Persiguiendo;
-                    estaAtacando = false;
                 }
                 else
                 {
-                    AtacarJugador();
+                    AtacarConMagia(distanciaAlJugador);
                 }
-
                 break;
         }
 
@@ -171,7 +186,6 @@ public class Enemigo : MonoBehaviour
 
     void ModoPatrulla()
     {
-        // Si est� esperando
         if (tiempoEsperaActual > 0)
         {
             tiempoEsperaActual -= Time.deltaTime;
@@ -179,12 +193,11 @@ public class Enemigo : MonoBehaviour
             return;
         }
 
-        // Moverse hacia el destino
         Vector2 direccion = (destinoPatrulla - (Vector2)transform.position).normalized;
         rb.velocity = direccion * velocidadMovimiento;
-        ultimaDireccion = direccion;
 
-        // Si lleg� al destino, generar nuevo punto
+        VoltearSprite(direccion.x);
+
         if (Vector2.Distance(transform.position, destinoPatrulla) < 0.5f)
         {
             tiempoEsperaActual = tiempoEsperaPatrulla;
@@ -192,66 +205,143 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    void PerseguirJugador()
+    void MoverHaciaJugador(float distanciaActual)
     {
-        if (jugador == null) return;
-
         Vector2 direccion = (jugador.position - transform.position).normalized;
-        rb.velocity = direccion * velocidadPersecucion;
-        ultimaDireccion = direccion;
+
+        // Si debe mantener distancia (comportamiento de mago)
+        if (mantenerDistancia)
+        {
+            if (distanciaActual < distanciaIdeal - 1f)
+            {
+                // Demasiado cerca, alejarse
+                rb.velocity = -direccion * velocidadMovimiento;
+            }
+            else if (distanciaActual > distanciaIdeal + 1f)
+            {
+                // Demasiado lejos, acercarse
+                rb.velocity = direccion * velocidadPersecucion;
+            }
+            else
+            {
+                // En distancia ideal, moverse lateralmente o quedarse quieto
+                rb.velocity = Vector2.zero;
+            }
+        }
+        else
+        {
+            // Moverse directamente hacia el jugador
+            rb.velocity = direccion * velocidadPersecucion;
+        }
+
+        VoltearSprite(direccion.x);
     }
 
-    void AtacarJugador()
+    void AtacarConMagia(float distanciaActual)
     {
-        rb.velocity = Vector2.zero;
+        // Mantener distancia mientras ataca
+        if (mantenerDistancia && distanciaActual < distanciaIdeal - 1f)
+        {
+            Vector2 direccionAlejarse = (transform.position - jugador.position).normalized;
+            rb.velocity = direccionAlejarse * velocidadMovimiento * 0.5f;
+        }
+        else
+        {
+            rb.velocity = Vector2.zero;
+        }
 
         // Mirar hacia el jugador
-        if (jugador != null)
-        {
-            ultimaDireccion = (jugador.position - transform.position).normalized;
-        }
+        float direccionX = jugador.position.x - transform.position.x;
+        VoltearSprite(direccionX);
 
-        if (puedeAtacar && !estaAtacando)
+        // Disparar ráfaga de proyectiles
+        if (puedeDisparar && !estaDisparando)
         {
-            StartCoroutine(EjecutarAtaque());
+            StartCoroutine(DispararRafaga());
         }
     }
 
-    IEnumerator EjecutarAtaque()
+    IEnumerator DispararRafaga()
     {
-        estaAtacando = true;
-        puedeAtacar = false;
+        estaDisparando = true;
+        puedeDisparar = false;
 
-        // Activar animaci�n de ataque
+        // Activar animación de ataque
         if (animator != null)
         {
             animator.SetTrigger("Atacando");
         }
 
-        // Peque�a espera para sincronizar con la animaci�n
-        yield return new WaitForSeconds(0.2f);
+        Debug.Log($"Mago '{name}' inicia ráfaga de {proyectilesPorRafaga} proyectiles");
 
-        // Detectar y da�ar al jugador
-        Collider2D[] objetosGolpeados = Physics2D.OverlapCircleAll(transform.position, rangoAtaque, capaJugador);
-        foreach (Collider2D obj in objetosGolpeados)
+        // Disparar múltiples proyectiles
+        for (int i = 0; i < proyectilesPorRafaga; i++)
         {
-            PlayerController jugadorScript = obj.GetComponent<PlayerController>();
-            if (jugadorScript != null)
-            {
-                jugadorScript.RecibirDanio(danioAtaque);
-                Debug.Log("Enemigo golpea al jugador por " + danioAtaque + " de daño");
-            }
+            DispararProyectil(i);
+            yield return new WaitForSeconds(tiempoEntreProyectiles);
         }
 
-        // Esperar antes de poder atacar de nuevo
-        yield return new WaitForSeconds(tiempoEntreAtaques);
-        puedeAtacar = true;
-        estaAtacando = false;
+        estaDisparando = false;
+
+        // Cooldown antes de la siguiente ráfaga
+        yield return new WaitForSeconds(tiempoEntreRafagas);
+        puedeDisparar = true;
+    }
+
+    void DispararProyectil(int indiceProyectil)
+    {
+        if (prefabProyectil == null || jugador == null) return;
+
+        // Calcular dirección base hacia el jugador
+        Vector2 direccionBase = (jugador.position - puntoDisparo.position).normalized;
+
+        // Calcular dispersión
+        float anguloBase = Mathf.Atan2(direccionBase.y, direccionBase.x) * Mathf.Rad2Deg;
+        
+        // Distribuir los proyectiles en un arco
+        float anguloOffset;
+        if (proyectilesPorRafaga == 1)
+        {
+            anguloOffset = 0;
+        }
+        else
+        {
+            // Distribuir uniformemente alrededor del centro
+            float rangoTotal = anguloDispersion * (proyectilesPorRafaga - 1);
+            anguloOffset = -rangoTotal / 2 + (anguloDispersion * indiceProyectil);
+        }
+
+        float anguloFinal = anguloBase + anguloOffset;
+        Vector2 direccionFinal = new Vector2(
+            Mathf.Cos(anguloFinal * Mathf.Deg2Rad),
+            Mathf.Sin(anguloFinal * Mathf.Deg2Rad)
+        ).normalized;
+
+        // Crear proyectil
+        GameObject proyectil = Instantiate(prefabProyectil, puntoDisparo.position, Quaternion.identity);
+
+        // Configurar velocidad (MOVIMIENTO LINEAL, NO persigue)
+        Rigidbody2D rbProyectil = proyectil.GetComponent<Rigidbody2D>();
+        if (rbProyectil != null)
+        {
+            rbProyectil.velocity = direccionFinal * velocidadProyectil;
+        }
+
+        // Rotar proyectil
+        proyectil.transform.rotation = Quaternion.Euler(0, 0, anguloFinal);
+
+        // Configurar daño
+        ProyectilEnemigo proyectilScript = proyectil.GetComponent<ProyectilEnemigo>();
+        if (proyectilScript != null)
+        {
+            proyectilScript.ConfigurarDanio(danioProyectil);
+        }
+
+        Debug.Log($"Proyectil {indiceProyectil + 1} disparado en ángulo {anguloFinal}°");
     }
 
     void GenerarPuntoPatrulla()
     {
-        // Generar un punto aleatorio dentro del rango de patrullaje
         Vector2 puntoAleatorio = Random.insideUnitCircle * rangoPatrullaje;
         destinoPatrulla = puntoInicial + puntoAleatorio;
     }
@@ -265,16 +355,18 @@ public class Enemigo : MonoBehaviour
         }
     }
 
+    void VoltearSprite(float direccionX)
+    {
+        if (spriteRenderer != null && direccionX != 0)
+        {
+            spriteRenderer.flipX = direccionX < 0;
+        }
+    }
+
     void ActualizarAnimaciones()
     {
         if (animator == null) return;
-
-        // Actualizar par�metros de velocidad para animaciones de movimiento
-        animator.SetFloat("VelocidadX", ultimaDireccion.x);
-        animator.SetFloat("VelocidadY", ultimaDireccion.y);
-
-        // Puedes agregar m�s par�metros seg�n tus animaciones
-        animator.SetBool("EnMovimiento", rb.velocity.magnitude > 0.1f);
+        // Aquí puedes agregar lógica de animación si tienes parámetros
     }
 
     public void RecibirDanio(int cantidad)
@@ -283,12 +375,10 @@ public class Enemigo : MonoBehaviour
             return;
 
         vidaActual -= cantidad;
-        Debug.Log("Enemigo recibi� " + cantidad + " de da�o. Vida restante: " + vidaActual);
+        Debug.Log($"Mago '{name}' recibió {cantidad} de daño. Vida restante: {vidaActual}");
 
-        // Efecto visual de da�o
         StartCoroutine(EfectoGolpe());
 
-        // Si recibe da�o, empezar a perseguir al jugador
         if (estadoActual != EstadoEnemigo.Atacando && estadoActual != EstadoEnemigo.Persiguiendo)
         {
             estadoActual = EstadoEnemigo.Persiguiendo;
@@ -314,50 +404,43 @@ public class Enemigo : MonoBehaviour
     void Morir()
     {
         estadoActual = EstadoEnemigo.Muerto;
-        Debug.Log("Enemigo eliminado");
+        Debug.Log($"Mago '{name}' eliminado");
 
-        // Detener movimiento
         rb.velocity = Vector2.zero;
+        rb.simulated = false;
 
-        // Desactivar colisiones
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
             col.enabled = false;
 
-        // Animaci�n de muerte si existe
-        if (animator != null)
-        {
-            animator.SetTrigger("Morir");
-        }
-
-        // Destruir despu�s de un tiempo (para permitir animaci�n de muerte)
-        StartCoroutine(DestruirDespuesDeTiempo(1f));
+        Destroy(gameObject, 1f);
     }
 
-    IEnumerator DestruirDespuesDeTiempo(float tiempo)
-    {
-        yield return new WaitForSeconds(tiempo);
-
-        // Aqu� puedes agregar efectos adicionales:
-        // - Spawn de items
-        // - Efectos de part�culas
-        // - Sonidos
-
-        Destroy(gameObject);
-    }
-
-    // Visualizar rangos en el editor
     void OnDrawGizmosSelected()
     {
-        // Rango de detecci�n (amarillo)
+        // Rango de detección (amarillo)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, rangoDeteccion);
 
-        // Rango de ataque (rojo)
-        Gizmos.color = Color.red;
+        // Rango de ataque (naranja)
+        Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, rangoAtaque);
 
-        // Rango de patrullaje (azul) - solo si est� activado
+        // Distancia ideal (cyan)
+        if (mantenerDistancia)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(transform.position, distanciaIdeal);
+        }
+
+        // Punto de disparo
+        if (puntoDisparo != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(puntoDisparo.position, 0.3f);
+        }
+
+        // Rango de patrullaje (azul)
         if (patrulla)
         {
             Vector3 puntoInicio = Application.isPlaying ? puntoInicial : transform.position;
@@ -366,18 +449,7 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // Getters p�blicos
-    public int ObtenerVidaActual()
-    {
-        return vidaActual;
-    }
-
-    public int ObtenerVidaMaxima()
-    {
-        return vidaMaxima;
-    }
-    public EstadoEnemigo ObtenerEstadoActual()
-    {
-        return estadoActual;
-    }
+    public int ObtenerVidaActual() => vidaActual;
+    public int ObtenerVidaMaxima() => vidaMaxima;
+    public EstadoEnemigo ObtenerEstadoActual() => estadoActual;
 }
