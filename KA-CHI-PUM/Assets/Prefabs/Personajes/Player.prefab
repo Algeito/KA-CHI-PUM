@@ -248,7 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e01b86961df53584ab5d1b831f569010, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabProyectil: {fileID: 2607580413469688797, guid: 73cf2b5f3a7a06540832fe0d76514c2c, type: 3}
+  prefabProyectil: {fileID: 5449966474032584766, guid: c137265e32450be46bf91642ffb8c14f, type: 3}
   puntoDisparo: {fileID: 5495861627084663988}
   rangoDeteccion: 5
   tiempoEntreDisparos: 1
