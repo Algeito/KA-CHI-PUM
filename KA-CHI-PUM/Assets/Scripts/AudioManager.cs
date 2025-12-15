@@ -10,7 +10,7 @@ public class AudioManager : MonoBehaviour
     [Header("═══ MÚSICA ═══")]
     [SerializeField] private AudioClip musicaLobby;
     [SerializeField] private AudioClip musicaNivel1;
-    [SerializeField] private AudioClip musicaGameOver; // Opcional
+    [SerializeField] private AudioClip musicaGameOver;
     
     [Header("═══ CONFIGURACIÓN ═══")]
     [Range(0f, 1f)]
@@ -18,7 +18,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private bool fadeEntreCanciones = true;
     [SerializeField] private float tiempoFade = 1f;
 
-    [Header("═══ EFECTOS DE SONIDO (Opcional) ═══")]
+    [Header("═══ EFECTOS DE SONIDO ═══")]
     [SerializeField] private AudioClip sonidoBoton;
     [SerializeField] private AudioClip sonidoInicio;
     [Range(0f, 1f)]
@@ -27,6 +27,7 @@ public class AudioManager : MonoBehaviour
     private AudioSource audioSourceMusica;
     private AudioSource audioSourceEfectos;
     private string escenaActual;
+    private bool estaCambiandoMusica = false;
 
     private void Awake()
     {
@@ -34,12 +35,12 @@ public class AudioManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject); // NO destruir entre escenas
+            DontDestroyOnLoad(gameObject);
             InicializarAudioSources();
         }
         else
         {
-            Destroy(gameObject); // Si ya existe otro AudioManager, destruir este
+            Destroy(gameObject);
             return;
         }
     }
@@ -51,13 +52,17 @@ public class AudioManager : MonoBehaviour
         
         // Reproducir música de la escena inicial
         escenaActual = SceneManager.GetActiveScene().name;
+        Debug.Log($"AudioManager iniciado en escena: {escenaActual}");
         ReproducirMusicaDeEscena(escenaActual);
     }
 
     private void OnDestroy()
     {
         // Desubscribirse del evento
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
     }
 
     private void InicializarAudioSources()
@@ -80,67 +85,78 @@ public class AudioManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         string nombreEscena = scene.name;
+        Debug.Log($"=== ESCENA CARGADA: {nombreEscena} ===");
+        Debug.Log($"Escena anterior: {escenaActual}");
         
-        // Solo cambiar música si es una escena diferente
-        if (nombreEscena != escenaActual)
-        {
-            escenaActual = nombreEscena;
-            ReproducirMusicaDeEscena(nombreEscena);
-        }
+        // SIEMPRE cambiar música al cargar una nueva escena
+        escenaActual = nombreEscena;
+        ReproducirMusicaDeEscena(nombreEscena);
     }
 
     private void ReproducirMusicaDeEscena(string nombreEscena)
     {
         AudioClip musicaNueva = null;
 
+        Debug.Log($"Buscando música para escena: {nombreEscena}");
+
         // Determinar qué música reproducir según la escena
-        switch (nombreEscena)
+        // Convertir a minúsculas para evitar problemas de mayúsculas
+        string escenaLower = nombreEscena.ToLower();
+
+        if (escenaLower.Contains("menu") || escenaLower.Contains("lobby") || escenaLower.Contains("principal"))
         {
-            case "MenuPrincipal":
-            case "Lobby":
-            case "Menu":
-                musicaNueva = musicaLobby;
-                break;
-
-            case "Nivel_1":
-            case "Nivel1":
-            case "Game":
-                musicaNueva = musicaNivel1;
-                break;
-
-            case "GameOver":
-                musicaNueva = musicaGameOver;
-                break;
-
-            default:
-                Debug.LogWarning($"No hay música asignada para la escena: {nombreEscena}");
-                return;
+            musicaNueva = musicaLobby;
+            Debug.Log("Música seleccionada: Lobby");
+        }
+        else if (escenaLower.Contains("nivel") || escenaLower.Contains("game") || escenaLower.Contains("level"))
+        {
+            musicaNueva = musicaNivel1;
+            Debug.Log("Música seleccionada: Nivel 1");
+        }
+        else if (escenaLower.Contains("gameover") || escenaLower.Contains("over"))
+        {
+            musicaNueva = musicaGameOver;
+            Debug.Log("Música seleccionada: Game Over");
+        }
+        else
+        {
+            Debug.LogWarning($"No hay música asignada para la escena: {nombreEscena}");
+            return;
         }
 
         // Reproducir la música nueva
         if (musicaNueva != null)
         {
+            // Verificar si ya está sonando esta música
+            if (audioSourceMusica.clip == musicaNueva && audioSourceMusica.isPlaying)
+            {
+                Debug.Log($"La música '{musicaNueva.name}' ya está sonando");
+                return;
+            }
+
             if (fadeEntreCanciones)
             {
-                StartCoroutine(CambiarMusicaConFade(musicaNueva));
+                if (!estaCambiandoMusica)
+                {
+                    StartCoroutine(CambiarMusicaConFade(musicaNueva));
+                }
             }
             else
             {
                 CambiarMusicaDirecta(musicaNueva);
             }
         }
+        else
+        {
+            Debug.LogError($"No hay clip de audio asignado para la escena: {nombreEscena}");
+        }
     }
 
     private void CambiarMusicaDirecta(AudioClip nuevaMusica)
     {
-        if (audioSourceMusica.clip == nuevaMusica && audioSourceMusica.isPlaying)
-        {
-            // Ya está sonando esta música
-            return;
-        }
-
         audioSourceMusica.Stop();
         audioSourceMusica.clip = nuevaMusica;
+        audioSourceMusica.volume = volumenMusica;
         audioSourceMusica.Play();
 
         Debug.Log($"Reproduciendo: {nuevaMusica.name}");
@@ -148,11 +164,9 @@ public class AudioManager : MonoBehaviour
 
     private IEnumerator CambiarMusicaConFade(AudioClip nuevaMusica)
     {
-        // Si ya está sonando esta música, no hacer nada
-        if (audioSourceMusica.clip == nuevaMusica && audioSourceMusica.isPlaying)
-        {
-            yield break;
-        }
+        estaCambiandoMusica = true;
+
+        Debug.Log($"Iniciando fade out de: {(audioSourceMusica.clip != null ? audioSourceMusica.clip.name : "ninguna")}");
 
         // Fade Out (bajar volumen)
         float volumenInicial = audioSourceMusica.volume;
@@ -160,10 +174,12 @@ public class AudioManager : MonoBehaviour
 
         while (tiempoTranscurrido < tiempoFade)
         {
-            tiempoTranscurrido += Time.deltaTime;
+            tiempoTranscurrido += Time.unscaledDeltaTime; // Usar unscaledDeltaTime para que funcione incluso si Time.timeScale = 0
             audioSourceMusica.volume = Mathf.Lerp(volumenInicial, 0f, tiempoTranscurrido / tiempoFade);
             yield return null;
         }
+
+        audioSourceMusica.volume = 0f;
 
         // Cambiar la canción
         audioSourceMusica.Stop();
@@ -177,12 +193,15 @@ public class AudioManager : MonoBehaviour
 
         while (tiempoTranscurrido < tiempoFade)
         {
-            tiempoTranscurrido += Time.deltaTime;
+            tiempoTranscurrido += Time.unscaledDeltaTime;
             audioSourceMusica.volume = Mathf.Lerp(0f, volumenMusica, tiempoTranscurrido / tiempoFade);
             yield return null;
         }
 
         audioSourceMusica.volume = volumenMusica;
+        estaCambiandoMusica = false;
+
+        Debug.Log($"Fade completado. Volumen final: {audioSourceMusica.volume}");
     }
 
     // ═══ MÉTODOS PÚBLICOS ═══
@@ -240,5 +259,12 @@ public class AudioManager : MonoBehaviour
     public void DetenerMusica()
     {
         audioSourceMusica.Stop();
+    }
+
+    // Método público para forzar cambio de música (por si acaso)
+    public void CambiarMusicaManualmente(string nombreEscena)
+    {
+        Debug.Log($"Cambio manual de musica solicitado para: {nombreEscena}");
+        ReproducirMusicaDeEscena(nombreEscena);
     }
 }
